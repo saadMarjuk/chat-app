@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real time Chat App(No database)</title>
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <audio id="join-sound" src="media/Ben 10.mp3"></audio>
+    <audio id="message-sound" src="media/Omnitrix notification.mp3" ></audio>
+    <audio id="leave-sound" src="media/Omnitrix.mp3"></audio>
+
+
+
+    <style>
+        body {
+            background-color: black;
+            font-family: Arial, sans-serif;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        nav {
+            background-color: green;
+            padding: 10px;
+            text-align: center;
+            color: black;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-image: url('media/b1.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            max-width: 60%;
+            font-size: 16px;
+        }
+
+        .message.right {
+            background-color: green;
+            color: black;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.left {
+            background-color: #444;
+            color: white;
+            margin-right: auto;
+            text-align: left;
+        }
+
+        .message small {
+            display: block;
+            font-size: 12px;
+            color: lightgray;
+        }
+
+        .send {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #222;
+            padding: 10px;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        #messageInp {
+            width: 80%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background-color: green;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background-color: black;
+            color: green;
+        }
+    </style>
+    </head>
+<body>
+ 
+    <nav>
+        
+        <h1> M-chat</h1>
+    </nav>
+    <div class="container">
+        <div class="message right">
+        
+
+        </div>
+        <div class="message left">
+        
+        
+        </div>
+    </div>
+        <div class="send">
+            <form action="#" id="send-container">
+            <input type="text" name="messageInp" id="messageInp">
+            <button class="btn" type="submit">send</button>
+            </form>
+           
+        </div>
+
+    
+
+
+
+
+    <script src="/socket.io/socket.io.js"></script>
+        <script>
+            const socket=io('http://localhost:3000');
+            const form= document.getElementById('send-container');
+            const messageInput=document.getElementById('messageInp');
+            const messageContainer= document.querySelector(".container");
+            const joinSound = document.getElementById('join-sound');
+            const messageSound = document.getElementById('message-sound');
+            const leaveSound = document.getElementById('leave-sound');
+             
+
+            //const name=prompt("ENTER YOUR NICK NAME TO JOIN THE CHAT");
+            let name;
+
+           while (!name) {
+            name = prompt("ENTER YOUR NICK NAME TO JOIN THE CHAT");
+             }
+
+
+
+
+            socket.emit('new-user-joined',name);
+              
+
+            const append= (message,position)=>{
+                const messageElement =document.createElement('div');
+                messageElement.innerText=message;
+                messageElement.classList.add('message');
+                messageElement.classList.add(position);
+                messageContainer.append(messageElement);
+            }
+           form.addEventListener('submit',(e)=>{
+            e.preventDefault();
+            const message=messageInput.value;
+            append(`you :${message}`,'right');
+            socket.emit('send',message);
+            messageInput.value='';
+           });
+
+
+            socket.on('user-joined',name=>{
+                append(`${name}  :joined that chat`,'right')
+                joinSound.play();
+            });
+           
+            socket.on('receive', data => {
+                append(`${data.name}: ${data.message}`, 'left');
+                messageSound.play();
+            });
+           
+           
+                socket.on('user-left', name => {
+            append(`${name} left the chat`, 'right');
+            leaveSound.play();
+        });
+            
+
+    
+     
+
+    </script>
+</body>
+</html>
